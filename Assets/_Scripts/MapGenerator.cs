@@ -1,18 +1,18 @@
 using UnityEngine;
 
-public class MapGenerator : MonoBehaviour
-{
-    [SerializeField] private int _width;
-    [SerializeField] private int _height;
+public class MapGenerator : MonoBehaviour {
 
-    [SerializeField] private string _seed;
-    [SerializeField] private bool _useRandomSeed;
+    [SerializeField] private int width;
+    [SerializeField] private int height;
 
-    [SerializeField] private int _smoothCount = 5;
+    [SerializeField] private string seed;
+    [SerializeField] private bool useRandomSeed;
 
-    [SerializeField, Range(0, 100)] int _randomFillPercent;
+    [SerializeField] private int smoothCount = 5;
 
-    int[,] _map;
+    [SerializeField, Range(0, 100)] int randomFillPercent;
+
+    int[,] map;
 
     private void Start() {
         GenerateMap();
@@ -25,43 +25,46 @@ public class MapGenerator : MonoBehaviour
     }
 
     private void GenerateMap() {
-        _map = new int[_width, _height];
+        map = new int[width, height];
         RandomFillMap();
 
-        for (int i=0; i<_smoothCount; i++) {
+        for (int i=0; i<smoothCount; i++) {
             SmoothMap();
         }
+
+        MeshGenerator meshGen = GetComponent<MeshGenerator>();
+        meshGen.GenerateMesh(map, 1);
     }
 
     private void RandomFillMap() {
-        if (_useRandomSeed) {
-            _seed = Time.time.ToString();
+        if (useRandomSeed) {
+            seed = Time.time.ToString();
         }
 
-        System.Random pseudoRandom = new System.Random(_seed.GetHashCode());
+        System.Random pseudoRandom = new System.Random(seed.GetHashCode());
 
-        for(int x=0; x<_width; x++) {
-            for (int y = 0; y < _height; y++) {
-                if (x == 0 || x == _width - 1 || y == 0 || y == _height - 1) {
-                    _map[x, y] = 1;
+        for(int x=0; x<width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+                    map[x, y] = 1;
                 }
                 else {
-                    _map[x, y] = pseudoRandom.Next(0, 100) < _randomFillPercent ? 1 : 0;
+                    map[x, y] = pseudoRandom.Next(0, 100) < randomFillPercent ? 1 : 0;
                 }
             }
         }
     }
 
     private void SmoothMap() {
-        for (int x = 0; x < _width; x++) {
-            for (int y = 0; y < _height; y++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 int neighbourWallTiles = GetSurroundingWallCount(x, y);
 
                 if(neighbourWallTiles > 4) {
-                    _map[x, y] = 1;
+                    map[x, y] = 1;
                 }
                 else if(neighbourWallTiles < 4) {
-                    _map[x, y] = 0;
+                    map[x, y] = 0;
                 }
             }
         }
@@ -72,9 +75,9 @@ public class MapGenerator : MonoBehaviour
 
         for (int neighbourX = gridX-1; neighbourX<= gridX+1; neighbourX++) {
             for (int neighbourY = gridY - 1; neighbourY <= gridY + 1; neighbourY++) {
-                if (neighbourX >= 0 && neighbourX < _width && neighbourY >= 0 && neighbourY < _height) {
+                if (neighbourX >= 0 && neighbourX < width && neighbourY >= 0 && neighbourY < height) {
                     if(neighbourX != gridX || neighbourY != gridY) {
-                        wallCount += _map[neighbourX, neighbourY];
+                        wallCount += map[neighbourX, neighbourY];
                     }
                 }
                 else {
@@ -88,15 +91,15 @@ public class MapGenerator : MonoBehaviour
     }
 
     private void OnDrawGizmos() {
-        if(_map != null) {
-            for (int x = 0; x < _width; x++) {
-                for (int y = 0; y < _height; y++) {
-                    Gizmos.color = _map[x, y] == 1 ? Color.black : Color.white;
-                    Vector3 pos = new Vector3(-_width/2 + x + 0.5f, 0f, -_height/2 + y + 0.5f);
+        //if(map != null) {
+        //    for (int x = 0; x < width; x++) {
+        //        for (int y = 0; y < height; y++) {
+        //            Gizmos.color = map[x, y] == 1 ? Color.black : Color.white;
+        //            Vector3 pos = new Vector3(-width/2 + x + 0.5f, 0f, -height/2 + y + 0.5f);
 
-                    Gizmos.DrawCube(pos, Vector3.one);
-                }
-            }
-        }
+        //            Gizmos.DrawCube(pos, Vector3.one);
+        //        }
+        //    }
+        //}
     }
 }
