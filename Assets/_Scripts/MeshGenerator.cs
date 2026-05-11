@@ -1,38 +1,145 @@
 using JetBrains.Annotations;
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MeshGenerator : MonoBehaviour {
 
+    private SquareGrid squareGrid;
+    private List<Vector3> vertices;
+    private List<int> triangles;
 
-    public SquareGrid squareGrid;
     public void GenerateMesh(int[,] map, float squareSize) {
         squareGrid = new SquareGrid(map, squareSize);
+
+        vertices = new List<Vector3>();
+        triangles = new List<int>();
+
+        for (int x = 0; x < squareGrid.squares.GetLength(0); x++) {
+            for (int y = 0; y < squareGrid.squares.GetLength(1); y++) {
+                TriangulateSquare(squareGrid.squares[x, y]);
+            }
+        }
+
+        Mesh mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = mesh;
+
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+
+    }
+
+    private void TriangulateSquare(Square square) {
+        switch (square.configuration) {
+            case 0:
+                break;
+
+            // 1 point
+            case 1:
+                MeshFromPoints(square.centreBottom, square.bottomLeft, square.centreLeft);
+                break;
+            case 2:
+                MeshFromPoints(square.centreRight, square.bottomRight, square.centreBottom);
+                break;
+            case 4:
+                MeshFromPoints(square.centreTop, square.topRight, square.centreRight);
+                break;
+            case 8:
+                MeshFromPoints(square.topLeft, square.centreTop, square.centreLeft);
+                break;
+
+            // 2 points
+            case 3:
+                MeshFromPoints(square.centreRight, square.bottomRight, square.bottomLeft, square.centreLeft);
+                break;
+            case 6:
+                MeshFromPoints(square.centreTop, square.topRight, square.bottomRight, square.centreBottom);
+                break;
+            case 9:
+                MeshFromPoints(square.topLeft, square.centreTop, square.centreBottom, square.bottomLeft);
+                break;
+            case 12:
+                MeshFromPoints(square.topLeft, square.topRight, square.centreRight, square.centreLeft);
+                break;
+            case 5:
+                MeshFromPoints(square.centreTop, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft, square.centreLeft);
+                break;
+            case 10:
+                MeshFromPoints(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.centreBottom, square.centreLeft);
+                break;
+
+            // 3 points
+            case 7:
+                MeshFromPoints(square.centreTop, square.topRight, square.bottomRight, square.bottomLeft, square.centreLeft);
+                break;
+            case 11:
+                MeshFromPoints(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.bottomLeft);
+                break;
+            case 13:
+                MeshFromPoints(square.topLeft, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft);
+                break;
+            case 14:
+                MeshFromPoints(square.topLeft, square.topRight, square.bottomRight, square.centreBottom, square.centreLeft);
+                break;
+
+            // 4 points
+            case 15:
+                MeshFromPoints(square.topLeft, square.topRight, square.bottomRight, square.bottomLeft);
+                break;
+        }
+    }
+
+    private void MeshFromPoints(params Node[] points) {
+        AssignVertices(points);
+
+        if(points.Length >= 3) CreateTriangle(points[0], points[1], points[2]);
+        if(points.Length >= 4) CreateTriangle(points[0], points[2], points[3]);
+        if(points.Length >= 5) CreateTriangle(points[0], points[3], points[4]);
+        if(points.Length >= 6) CreateTriangle(points[0], points[4], points[5]);
+
+    }
+
+    private void AssignVertices(Node[] points) {
+        for(int i=0; i<points.Length; i++) {
+            if(points[i].vertexIndex == -1) {
+                points[i].vertexIndex = vertices.Count;
+                vertices.Add(points[i].position);
+            }
+        }
+    }
+
+    private void CreateTriangle(Node a, Node b, Node c) {
+        triangles.Add(a.vertexIndex);
+        triangles.Add(b.vertexIndex);
+        triangles.Add(c.vertexIndex);
     }
 
     private void OnDrawGizmos() {
-        if (squareGrid != null) {
-            for (int x = 0; x < squareGrid.squares.GetLength(0); x++) {
-                for (int y = 0; y < squareGrid.squares.GetLength(1); y++) {
-                    Gizmos.color = squareGrid.squares[x, y].topLeft.active ? Color.black : Color.white;
-                    Gizmos.DrawCube(squareGrid.squares[x, y].topLeft.position, Vector3.one * 0.4f);
+        //if (squareGrid != null) {
+        //    for (int x = 0; x < squareGrid.squares.GetLength(0); x++) {
+        //        for (int y = 0; y < squareGrid.squares.GetLength(1); y++) {
 
-                    Gizmos.color = squareGrid.squares[x, y].topRight.active ? Color.black : Color.white;
-                    Gizmos.DrawCube(squareGrid.squares[x, y].topRight.position, Vector3.one * 0.4f);
+        //            Gizmos.color = squareGrid.squares[x, y].topLeft.active ? Color.black : Color.white;
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].topLeft.position, Vector3.one * 0.4f);
 
-                    Gizmos.color = squareGrid.squares[x, y].bottomRight.active ? Color.black : Color.white;
-                    Gizmos.DrawCube(squareGrid.squares[x, y].bottomRight.position, Vector3.one * 0.4f);
+        //            Gizmos.color = squareGrid.squares[x, y].topRight.active ? Color.black : Color.white;
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].topRight.position, Vector3.one * 0.4f);
 
-                    Gizmos.color = squareGrid.squares[x, y].bottomLeft.active ? Color.black : Color.white;
-                    Gizmos.DrawCube(squareGrid.squares[x, y].bottomLeft.position, Vector3.one * 0.4f);
+        //            Gizmos.color = squareGrid.squares[x, y].bottomRight.active ? Color.black : Color.white;
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].bottomRight.position, Vector3.one * 0.4f);
 
-                    Gizmos.color = Color.grey;
-                    Gizmos.DrawCube(squareGrid.squares[x, y].centreTop.position, Vector3.one * 0.15f);
-                    Gizmos.DrawCube(squareGrid.squares[x, y].centreRight.position, Vector3.one * 0.15f);
-                    Gizmos.DrawCube(squareGrid.squares[x, y].centreBottom.position, Vector3.one * 0.15f);
-                    Gizmos.DrawCube(squareGrid.squares[x, y].centreLeft.position, Vector3.one * 0.15f);
-                }
-            }
-        }
+        //            Gizmos.color = squareGrid.squares[x, y].bottomLeft.active ? Color.black : Color.white;
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].bottomLeft.position, Vector3.one * 0.4f);
+
+        //            Gizmos.color = Color.grey;
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].centreTop.position, Vector3.one * 0.15f);
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].centreRight.position, Vector3.one * 0.15f);
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].centreBottom.position, Vector3.one * 0.15f);
+        //            Gizmos.DrawCube(squareGrid.squares[x, y].centreLeft.position, Vector3.one * 0.15f);
+        //        }
+        //    }
+        //}
     }
 
 
@@ -68,6 +175,7 @@ public class MeshGenerator : MonoBehaviour {
     public class Square {
         public ControlNode topLeft, topRight, bottomRight, bottomLeft;
         public Node centreTop, centreRight, centreBottom, centreLeft;
+        public int configuration = 0;
 
         public Square(ControlNode _topLeft, ControlNode _topRight, ControlNode _bottomRight, ControlNode _bottomLeft) {
             topLeft = _topLeft;
@@ -79,6 +187,11 @@ public class MeshGenerator : MonoBehaviour {
             centreRight = bottomRight.above;
             centreBottom = bottomLeft.right;
             centreLeft = bottomLeft.above;
+
+            configuration += topLeft.active ? 8 : 0;
+            configuration += topRight.active ? 4 : 0;
+            configuration += bottomRight.active ? 2 : 0;
+            configuration += bottomLeft.active ? 1 : 0;
         }
     }
 
