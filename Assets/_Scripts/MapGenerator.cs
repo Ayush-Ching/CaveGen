@@ -14,6 +14,7 @@ public class MapGenerator : MonoBehaviour {
     [SerializeField] private int _borderSize = 5;
     [SerializeField] private int _wallThresholdSize = 50;
     [SerializeField] private int _roomThresholdSize = 50;
+    [SerializeField] private int _passagewayRadius = 2;
 
     [SerializeField, Range(0, 100)] int _randomFillPercent = 50;
 
@@ -38,6 +39,10 @@ public class MapGenerator : MonoBehaviour {
         }
 
         ProcessMap();
+
+        for (int i = 0; i < _smoothCount; i++) {
+            SmoothMap();
+        }
 
         int[,] borderedMap = new int[_width + _borderSize * 2, _height + _borderSize * 2];
 
@@ -165,6 +170,77 @@ public class MapGenerator : MonoBehaviour {
     private void CreatePassage(Room roomA, Room roomB, Coord tileA, Coord tileB) {
         Room.ConnectRooms(roomA, roomB);
         Debug.DrawLine(CoordToWorldPoint(tileA), CoordToWorldPoint(tileB), Color.green, 7);
+
+        List<Coord> line = GetLine(tileA, tileB);
+        foreach (Coord c in line) {
+            DrawCircle(c, _passagewayRadius);
+        }
+    }
+
+    private void DrawCircle(Coord c, int r) {
+        for(int x=-r; x<=r; x++) {
+            for (int y=-r; y<=r; y++) {
+                if(x*x + y*y <= r * r) {
+                    int drawX = c.tileX + x;
+                    int drawY = c.tileY + y;
+                    if(IsInMapRange(drawX, drawY)) {
+                        _map[drawX, drawY] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    private List<Coord> GetLine(Coord from, Coord to) {
+        List<Coord> line = new List<Coord>();
+
+        int x = from.tileX;
+        int y = from.tileY;
+
+        int dx = to.tileX - from.tileX;
+        int dy = to.tileY - from.tileY;
+
+        bool inverted = false;
+        int step = Math.Sign(dx);
+        int gradientStep = Math.Sign(dy);
+
+        int longest = Mathf.Abs(dx);
+        int shortest = Mathf.Abs(dy);
+
+        if(longest < shortest) {
+            inverted = true;
+            longest = Mathf.Abs(dy);
+            shortest = Mathf.Abs(dx);
+
+            step = Math.Sign(dy);
+            gradientStep = Math.Sign(dx);
+        }
+
+        int gradientAccumulation = longest / 2;
+        for(int i=0; i<longest; i++) {
+            line.Add(new Coord(x, y));
+
+            if (inverted) {
+                y += step;
+            }
+            else {
+                x += step;
+            }
+
+            gradientAccumulation += shortest;
+            if(gradientAccumulation >= longest) {
+                if (inverted) {
+                    x += gradientStep;
+                }
+                else {
+                    y += gradientStep;
+                }
+
+                gradientAccumulation -= longest;
+            }
+        }
+
+        return line;
     }
 
     private Vector3 CoordToWorldPoint(Coord tile) {
