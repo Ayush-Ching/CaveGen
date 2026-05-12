@@ -9,6 +9,7 @@ public class MapGenerator : MonoBehaviour {
     [SerializeField] private bool useRandomSeed;
 
     [SerializeField] private int smoothCount = 5;
+    [SerializeField] private int borderSize = 5;
 
     [SerializeField, Range(0, 100)] int randomFillPercent;
 
@@ -32,8 +33,21 @@ public class MapGenerator : MonoBehaviour {
             SmoothMap();
         }
 
+        int[,] borderedMap = new int[width + borderSize * 2, height + borderSize * 2];
+
+        for (int x = 0; x < borderedMap.GetLength(0); x++) {
+            for (int y = 0; y < borderedMap.GetLength(1); y++) {
+                if(x >= borderSize && x < width + borderSize && y >= borderSize && y < height + borderSize) {
+                    borderedMap[x, y] = map[x - borderSize, y - borderSize];
+                }
+                else {
+                    borderedMap[x, y] = 1;
+                }
+            }
+        }
+
         MeshGenerator meshGen = GetComponent<MeshGenerator>();
-        meshGen.GenerateMesh(map, 1);
+        meshGen.GenerateMesh(borderedMap, 1);
     }
 
     private void RandomFillMap() {
