@@ -563,11 +563,12 @@ MonoBehaviour:
   width: 128
   height: 72
   seed: manoj
-  useRandomSeed: 1
+  useRandomSeed: 0
   smoothCount: 5
   borderSize: 5
   wallThresholdSize: 50
-  randomFillPercent: 45
+  roomThresholdSize: 50
+  randomFillPercent: 54
 --- !u!114 &1911277616
 MonoBehaviour:
   m_ObjectHideFlags: 0
