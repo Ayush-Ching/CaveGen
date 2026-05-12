@@ -52,15 +52,14 @@ public class MeshGenerator : MonoBehaviour {
         List<Vector3> wallVertices = new List<Vector3>();
         List<int> wallTriangles = new List<int>();
         Mesh wallMesh = new Mesh();
-        float wallHeight = 5;
 
         foreach(List<int> outline in _outlines){
             for(int i=0; i<outline.Count - 1; i++) {
                 int startIndex = wallVertices.Count;
                 wallVertices.Add(_vertices[outline[i]]);      // left
                 wallVertices.Add(_vertices[outline[i+1]]);    // right
-                wallVertices.Add(_vertices[outline[i]] - Vector3.up * wallHeight);      // bottom left
-                wallVertices.Add(_vertices[outline[i+1]] - Vector3.up * wallHeight);    // bottom right
+                wallVertices.Add(_vertices[outline[i]] - Vector3.up * _wallHeight);      // bottom left
+                wallVertices.Add(_vertices[outline[i+1]] - Vector3.up * _wallHeight);    // bottom right
 
                 wallTriangles.Add(startIndex + 0);
                 wallTriangles.Add(startIndex + 2);
