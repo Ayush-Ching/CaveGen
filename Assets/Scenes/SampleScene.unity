@@ -566,6 +566,7 @@ MonoBehaviour:
   useRandomSeed: 1
   smoothCount: 5
   borderSize: 5
+  wallThresholdSize: 50
   randomFillPercent: 45
 --- !u!114 &1911277616
 MonoBehaviour:
