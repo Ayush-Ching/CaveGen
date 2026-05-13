@@ -169,7 +169,7 @@ public class MapGenerator : MonoBehaviour {
 
     private void CreatePassage(Room roomA, Room roomB, Coord tileA, Coord tileB) {
         Room.ConnectRooms(roomA, roomB);
-        Debug.DrawLine(CoordToWorldPoint(tileA), CoordToWorldPoint(tileB), Color.green, 7);
+        // Debug.DrawLine(CoordToWorldPoint(tileA), CoordToWorldPoint(tileB), Color.green, 7);
 
         List<Coord> line = GetLine(tileA, tileB);
         foreach (Coord c in line) {
